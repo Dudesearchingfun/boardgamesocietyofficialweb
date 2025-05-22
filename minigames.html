@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Space War Game</title>
+<style> 
+  body { margin: 0; background: black; overflow: hidden; color: white; font-family: Arial, sans-serif; user-select: none; }
+  canvas { display: block; margin: 0 auto; background: #000; border: 2px solid white; }
+  #result { 
+    text-align: center; margin-top: 10px; font-size: 20px; color: white;
+    display: none;
+  }
+  #nameInputContainer {
+    text-align: center;
+    margin-top: 100px;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+  #nameInputContainer input[type="text"] {
+    padding: 10px;
+    font-size: 18px;
+    width: 200px;
+    border-radius: 5px;
+    border: none;
+  }
+  #nameInputContainer button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #2196f3;
+    color: white;
+  }
+  #nameInputContainer button:hover {
+    background-color: #0b7dda;
+  }
+</style>
+</head>
+<body>
+
+<div id="nameInputContainer">
+  <label for="playerNameInput">请输入您的名字：</label>
+  <input type="text" id="playerNameInput" maxlength="12" placeholder="你的名字" />
+  <button id="startGameBtn">开始游戏</button>
+</div>
+
+<canvas id="gameCanvas" width="500" height="700" style="display:none;"></canvas>
+<div id="result"></div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const explosionSound = new Audio("https://actions.google.com/sounds/v1/explosions/explosion.ogg");
+const shootSound = new Audio("https://actions.google.com/sounds/v1/weapons/laser_gun.ogg");
+
+let keys = {};
+let bullets = [];
+let enemies = [];
+let score = 0;
+let lives = 5;
+let gameOver = false;
+let infiniteMode = false; // W key mode
+let playerName = "";
+
+let shootCooldown = 0;
+const normalShootCooldownMax = 15; // frames between normal bullets
+
+let lostChancesUsed = 0; // count faded enemies after lives lost
+
+// Difficulty variables
+let enemySpawnInterval = 1200; // initial enemy spawn interval in ms
+let enemySpawnTimerId = null;
+let enemySpeedMultiplier = 1;
+let enemyHPBase = 1;
+let spacebarBulletDamage = 1; // increases with score, max 5
+
+const spaceship = {
+  x: canvas.width / 2 - 25,
+  y: canvas.height - 80,
+  width: 50,
+  height: 60,
+  speed: 7,
+};
+
+class Bullet {
+  constructor(x, y, damage) {
+    this.x = x;
+    this.y = y;
+    this.width = 6;
+    this.height = 14;
+    this.damage = damage;
+  }
+  draw() {
+    ctx.fillStyle = "cyan";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+  update() {
+    this.y -= 15;
+  }
+}
+
+class Enemy {
+  constructor(x, y, speed, hp) {
+    this.x = x;
+    this.y = y;
+    this.width = 40;
+    this.height = 40;
+    this.speed = speed;
+    this.hp = hp;
+    this.alpha = 1;
+    this.fading = false;
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    if (!this.fading) {
+      ctx.fillStyle = "lime";
+      let hpBarWidth = (this.hp / enemyHPBase) * this.width;
+      ctx.fillRect(this.x, this.y - 8, hpBarWidth, 5);
+    }
+
+    ctx.globalAlpha = 1;
+  }
+  update() {
+    this.y += this.speed * enemySpeedMultiplier;
+
+    if (this.fading) {
+      this.alpha -= 0.01;
+      if (this.alpha <= 0) {
+        enemies.splice(enemies.indexOf(this), 1);
+        lostChancesUsed++;
+        if (lostChancesUsed >= 5) {
+          endGame();
+        }
+      }
+    }
+  }
+}
+
+function spawnEnemy() {
+  if (gameOver) return;
+
+  let x = Math.random() * (canvas.width - 40);
+  let speed = 0.5 + Math.random() * 0.75;
+  let hp = enemyHPBase;
+  enemies.push(new Enemy(x, -40, speed, hp));
+}
+
+function startEnemySpawner() {
+  if (enemySpawnTimerId) clearInterval(enemySpawnTimerId);
+  enemySpawnTimerId = setInterval(spawnEnemy, enemySpawnInterval);
+}
+
+function shoot(isOverpower = false) {
+  if (gameOver) return;
+  if (shootCooldown > 0 && !isOverpower) return;
+
+  shootCooldown = normalShootCooldownMax;
+
+  if (isOverpower) {
+    for (let offset = -20; offset <= 20; offset += 10) {
+      bullets.push(new Bullet(spaceship.x + spaceship.width / 2 + offset - 3, spaceship.y - 10, 1));
+    }
+    shootSound.currentTime = 0;
+    shootSound.play();
+  } else {
+    bullets.push(new Bullet(spaceship.x + spaceship.width / 2 - 3, spaceship.y - 10, spacebarBulletDamage));
+    shootSound.currentTime = 0;
+    shootSound.play();
+  }
+}
+
+function endGame() {
+  gameOver = true;
+  clearInterval(enemySpawnTimerId);
+  enemies = [];
+  bullets = [];
+  draw();
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.style.display = "block";
+  resultDiv.innerHTML = `
+    <p>游戏结束</p>
+    <p>玩家：${playerName}</p>
+    <p>得分：${score}</p>
+    <button onclick="location.href='index.html'">返回主页</button>
+  `;
+
+  canvas.style.display = "none";
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.fillRect(spaceship.x, spaceship.y, spaceship.width, spaceship.height);
+
+  bullets.forEach(b => b.draw());
+  enemies.forEach(e => e.draw());
+
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.fillText("分数: " + score, 10, 30);
+  ctx.fillText("生命: " + lives, 10, 60);
+
+  if (gameOver) {
+    ctx.fillStyle = "white";
+    ctx.font = "40px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("游戏结束", canvas.width / 2, canvas.height / 2);
+    ctx.font = "20px Arial";
+    ctx.fillText("Made by Ivan :)", canvas.width / 2, canvas.height / 2 + 40);
+    ctx.textAlign = "left";
+  }
+}
+
+function update() {
+  if (gameOver) return;
+
+  if (keys["ArrowLeft"]) spaceship.x -= spaceship.speed;
+  if (keys["ArrowRight"]) spaceship.x += spaceship.speed;
+  if (spaceship.x < 0) spaceship.x = 0;
+  if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
+
+  if (shootCooldown > 0) shootCooldown--;
+
+  if (infiniteMode && !gameOver) {
+    shoot(true);
+  }
+
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    bullets[i].update();
+    if (bullets[i].y < -bullets[i].height) {
+      bullets.splice(i, 1);
+    }
+  }
+
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    let enemy = enemies[i];
+    enemy.update();
+
+    if (!enemy.fading && enemy.y > canvas.height) {
+      lives--;
+      if (lives <= 0) {
+        endGame();
+      } else {
+        enemy.fading = true;
+      }
+    }
+  }
+
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      let e = enemies[j];
+      if (!e.fading &&
+        b.x < e.x + e.width &&
+        b.x + b.width > e.x &&
+        b.y < e.y + e.height &&
+        b.y + b.height > e.y
+      ) {
+        e.hp -= b.damage;
+        bullets.splice(i, 1);
+        if (e.hp <= 0) {
+          enemies.splice(j, 1);
+          score += 10;
+
+          if (score % 100 === 0 && score <= 500) {
+            if (enemySpawnInterval > 400) enemySpawnInterval -= 200;
+            enemySpeedMultiplier += 0.2;
+            enemyHPBase += 0.5;
+            if (spacebarBulletDamage < 5) spacebarBulletDamage++;
+            startEnemySpawner();
+          }
+
+          explosionSound.currentTime = 0;
+          explosionSound.play();
+        }
+        break;
+      }
+    }
+  }
+}
+
+function gameLoop() {
+  update();
+  draw();
+  if (!gameOver) requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("keydown", e => {
+  keys[e.key] = true;
+  if (e.key === " " && !infiniteMode) shoot(false);
+  if (e.key === "w" || e.key === "W") infiniteMode = true;
+});
+document.addEventListener("keyup", e => {
+  keys[e.key] = false;
+  if (e.key === "w" || e.key === "W") infiniteMode = false;
+});
+
+// Start button handler
+document.getElementById("startGameBtn").addEventListener("click", () => {
+  const input = document.getElementById("playerNameInput");
+  const name = input.value.trim();
+  if (name.length === 0) {
+    alert("请输入名字才能开始游戏！");
+    return;
+  }
+  playerName = name;
+
+  // Hide name input UI
+  document.getElementById("nameInputContainer").style.display = "none";
+  // Show game canvas
+  canvas.style.display = "block";
+  // Reset game variables
+  score = 0;
+  lives = 5;
+  gameOver = false;
+  infiniteMode = false;
+  bullets = [];
+  enemies = [];
+  enemySpawnInterval = 1200;
+  enemySpeedMultiplier = 1;
+  enemyHPBase = 1;
+  spacebarBulletDamage = 1;
+  lostChancesUsed = 0;
+  spaceship.x = canvas.width / 2 - 25;
+
+  startEnemySpawner();
+  gameLoop();
+});
+</script>
+</body>
+</html>

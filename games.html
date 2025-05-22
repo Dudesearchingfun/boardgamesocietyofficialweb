@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>桌游类型与简介</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+  body {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    background: #000010;
+    color: #a0eaff;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* Star canvas */
+  #stars {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    font-size: 4rem;
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    font-weight: 900;
+    color: black;
+    text-shadow:
+      0 0 6px #00f0ff,
+      0 0 12px #0077ff,
+      0 0 20px #00aaff,
+      0 0 30px #00f0ff,
+      0 0 40px #00f0ff;
+    letter-spacing: 5px;
+    user-select: none;
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto 4rem;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 25, 0.7);
+    border-radius: 20px;
+    box-shadow: 0 0 20px #00cfff;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .game-btn {
+    flex: 1 1 250px;
+    background: linear-gradient(135deg, #0077ff, #00e0ff);
+    color: #001f3f;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 0 15px #00dfff, 0 0 40px #0077ff inset;
+    transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    user-select: none;
+  }
+
+  .game-btn:hover {
+    background: linear-gradient(135deg, #00e0ff, #0055cc);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #00ffff, 0 0 50px #0055cc inset;
+  }
+
+a.back-btn {
+  display: inline-block;
+  margin: 3rem auto 0;
+  padding: 1rem 3rem;
+  background: linear-gradient(135deg, #0077ff, #00e0ff);
+  color: #001f3f;
+  font-weight: 900;
+  font-size: 2.5rem;      /* Bigger font size */
+  text-decoration: none;
+  border-radius: 30px;
+  box-shadow: 0 0 20px #00dfff, 0 0 50px #0077ff inset;
+  transition: background 0.3s ease;
+  user-select: none;
+  text-align: center;
+  width: fit-content;
+}
+
+  a.back-btn:hover {
+    background: linear-gradient(135deg, #00e0ff, #0055cc);
+    color: white;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<header>桌游类型与简介</header>
+
+<main>
+  <a href="sushigo.html" class="game-btn">Sushi Go</a>
+  <a href="sushigoparty.html" class="game-btn">Sushi Go Party</a>
+  <a href="citadels.html" class="game-btn">Citadels</a>
+  <a href="avalon.html" class="game-btn">Avalon</a>
+  <a href="cluedo.html" class="game-btn">Clue / Cluedo</a>
+  <a href="tokaido.html" class="game-btn">Tokaido</a>
+  <a href="pandemic.html" class="game-btn">Pandemic</a>
+  <a href="munchkin.html" class="game-btn">Munchkin</a>
+  <a href="dixit.html" class="game-btn">Dixit</a>
+  <a href="chinatown.html" class="game-btn">Chinatown</a>
+  <a href="sonar.html" class="game-btn">Sonar</a>
+</main>
+<a href="index.html" class="back-btn">返回主页</a>
+
+<script>
+  // Starfield animation
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  let stars = [];
+  const starCount = 300;
+
+  class Star {
+    constructor(){
+      this.reset();
+    }
+    reset(){
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.radius = Math.random() * 1.2 + 0.4;
+      this.alpha = Math.random();
+      this.delta = 0.007 + Math.random() * 0.02;
+      this.dx = (Math.random() - 0.5) * 0.05;
+      this.dy = (Math.random() - 0.5) * 0.05;
+      this.sparkleTime = 0;
+      this.sparkleDuration = Math.random() * 200 + 100;
+    }
+    update(){
+      this.alpha += this.delta;
+      if(this.alpha >= 1 || this.alpha <= 0){
+        this.delta = -this.delta;
+      }
+      this.x += this.dx;
+      this.y += this.dy;
+      if(this.x > width) this.x = 0;
+      if(this.x < 0) this.x = width;
+      if(this.y > height) this.y = 0;
+      if(this.y < 0) this.y = height;
+
+      this.sparkleTime++;
+      if(this.sparkleTime > this.sparkleDuration){
+        this.radius = (Math.random() * 2) + 1.5;
+        this.sparkleTime = 0;
+        this.sparkleDuration = Math.random() * 300 + 100;
+      } else {
+        this.radius *= 0.95;
+        if(this.radius < 0.8) this.radius = 0.8;
+      }
+    }
+    draw(ctx){
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(160, 234, 255, ${this.alpha})`;
+      ctx.shadowColor = `rgba(0, 200, 255, ${this.alpha})`;
+      ctx.shadowBlur = 10;
+      ctx.fill();
+    }
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    stars = [];
+    for(let i=0; i<starCount; i++){
+      stars.push(new Star());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    stars.forEach(star => {
+      star.update();
+      star.draw(ctx);
+    });
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  animate();
+</script>
+
+</body>
+</html>
