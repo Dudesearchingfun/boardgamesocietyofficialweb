@@ -183,17 +183,22 @@ function endGame() {
   bullets = [];
   draw();
 
+  // 保存玩家成绩到 localStorage
+  saveScore(playerName, score);
+
   const resultDiv = document.getElementById("result");
   resultDiv.style.display = "block";
   resultDiv.innerHTML = `
     <p>游戏结束</p>
     <p>玩家：${playerName}</p>
     <p>得分：${score}</p>
-    <button onclick="location.href='index.html'">返回主页</button>
+    <button onclick="location.href='minigames.html'">再玩一次</button>
+    <button onclick="location.href='ranking.html'">查看排行榜</button>
   `;
 
   canvas.style.display = "none";
 }
+
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -335,6 +340,27 @@ document.getElementById("startGameBtn").addEventListener("click", () => {
   startEnemySpawner();
   gameLoop();
 });
+
+function saveScore(name, score) {
+  // 从 localStorage 取排行榜数据（是数组）
+  let ranking = JSON.parse(localStorage.getItem('spaceWarRankings')) || [];
+
+  // 添加当前成绩
+  ranking.push({name: name, score: score, date: Date.now()});
+
+  // 按分数排序（降序）
+  ranking.sort((a, b) => b.score - a.score);
+
+  // 保留最多 20 条记录（防止无限增长）
+  if (ranking.length > 20) ranking = ranking.slice(0, 20);
+
+  // 保存回 localStorage
+  localStorage.setItem('spaceWarRankings', JSON.stringify(ranking));
+}
+
+
+
 </script>
 </body>
 </html>
+
