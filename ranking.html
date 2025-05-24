@@ -1,334 +1,284 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>太空战排行榜</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>太空战排行榜</title>
 
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    overflow: hidden;
-    font-family: 'Orbitron', sans-serif;
-    color: white;
-    user-select: none;
-    background: black;
-  }
+  <style>
+    /* 太空背景全屏Canvas */
+    body, html {
+      margin: 0; padding: 0; overflow-x: hidden;
+      height: 100%;
+      background-color: black;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
 
-  #spaceCanvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: -1;
-    background: radial-gradient(circle at center, #0b0f2a, #000011 80%);
-  }
+    #spaceCanvas {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: -1;
+      background: radial-gradient(ellipse at center, #000000 0%, #0a0a0a 80%);
+    }
 
-  h1 {
-    text-align: center;
-    padding-top: 30px;
-    font-size: 3.5em;
-    letter-spacing: 0.15em;
-    color: #000000;
-    text-shadow:
-      0 0 10px #ffffff,
-      0 0 20px #a3c1ff,
-      0 0 30px #6f92ff,
-      0 0 40px #6f92ff,
-      0 0 60px #4169e1,
-      0 0 80px #1e40ff;
-  }
+    h1 {
+      margin-top: 50px;
+      font-size: 3em;
+      text-align: center;
+      color: #00ffff;
+      text-shadow: 0 0 10px #00ffff;
+    }
 
-  .leaderboard {
-    max-width: 650px;
-    margin: 40px auto 20px;
-    background: rgba(10, 10, 30, 0.85);
-    border-radius: 20px;
-    box-shadow:
-      0 0 30px 8px rgba(30, 144, 255, 0.7),
-      inset 0 0 20px #000020;
-    padding: 25px 40px;
-  }
+    .leaderboard {
+      max-width: 650px;
+      margin: 30px auto 60px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      padding: 25px 20px;
+      box-shadow: 0 0 30px #00ffff;
+      font-size: 1.25em;
+      user-select: none;
+    }
 
-  .player {
-    display: flex;
-    align-items: center;
-    margin: 12px 0;
-    transition: transform 0.3s ease;
-    color: #cce0ff;
-  }
-  .player:hover {
-    transform: scale(1.05);
-    color: #ffffff;
-    text-shadow:
-      0 0 6px #78aaff,
-      0 0 12px #78aaff;
-  }
+    .player {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
 
-  .rank-number {
-    display: inline-block;
-    width: 2em;
-    color: #88bbff;
-    font-weight: bold;
-    margin-right: 10px;
-  }
+    .player:hover {
+      background-color: rgba(0, 255, 255, 0.15);
+    }
 
-  .top1 {
-    font-size: 2.5em;
-    color: #ffd700;
-    text-shadow:
-      0 0 15px #fff,
-      0 0 40px #ffd700,
-      0 0 60px #ffdd00;
-    font-weight: 900;
-  }
-  .top2 {
-    font-size: 2em;
-    color: #c0c0c0;
-    text-shadow:
-      0 0 12px #eee,
-      0 0 35px #c0c0c0;
-    font-weight: 800;
-  }
-  .top3 {
-    font-size: 1.8em;
-    color: #cd7f32;
-    text-shadow:
-      0 0 12px #b3722a,
-      0 0 30px #cd7f32;
-    font-weight: 700;
-  }
-  .normal {
-    font-size: 1.2em;
-    color: #aaccee;
-  }
+    .rank-number {
+      width: 40px;
+      font-weight: 700;
+      text-align: right;
+      margin-right: 15px;
+      color: #00ffff;
+      user-select: none;
+      flex-shrink: 0;
+    }
 
-  .crown {
-    width: 38px;
-    margin-right: 15px;
-    animation: float 2.5s ease-in-out infinite;
-  }
+    .crown {
+      width: 28px;
+      height: 28px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
 
-  .crown.top1 { filter: drop-shadow(0 0 10px gold); }
-  .crown.top2 { filter: drop-shadow(0 0 10px silver); }
-  .crown.top3 { filter: drop-shadow(0 0 10px #cd7f32); }
+    /* 字体大小及发光效果递减 */
+    .top1 {
+      font-size: 2.0em;
+      color: gold;
+      font-weight: 900;
+      text-shadow:
+        0 0 10px gold,
+        0 0 20px gold,
+        0 0 30px orange;
+    }
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
+    .top2 {
+      font-size: 1.6em;
+      color: silver;
+      font-weight: 800;
+      text-shadow:
+        0 0 8px silver,
+        0 0 15px #bbb;
+    }
 
-  /* 返回按钮样式 */
-  #backBtn {
-    background: linear-gradient(145deg, #00bfff, #1e90ff);
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    padding: 12px 32px;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow:
-      0 0 10px #00bfff,
-      0 0 20px #1e90ff,
-      inset 0 0 10px rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    font-family: 'Orbitron', sans-serif;
-  }
-  #backBtn:hover {
-    transform: scale(1.08);
-  }
-</style>
+    .top3 {
+      font-size: 1.3em;
+      color: #cd7f32; /* 铜色 */
+      font-weight: 700;
+      text-shadow:
+        0 0 6px #cd7f32,
+        0 0 12px #b06a2f;
+    }
+
+    .normal {
+      font-size: 1em;
+      color: white;
+      font-weight: 500;
+    }
+
+    #backBtn {
+      display: inline-block;
+      margin: 40px auto 60px;
+      padding: 14px 38px;
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(45deg, #00ffff, #008888);
+      border: none;
+      border-radius: 14px;
+      color: black;
+      cursor: pointer;
+      box-shadow: 0 0 15px #00ffff;
+      user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #backBtn:hover {
+      background: linear-gradient(45deg, #008888, #004444);
+      color: white;
+      box-shadow: 0 0 25px #00ffff;
+    }
+  </style>
 </head>
 <body>
+  <canvas id="spaceCanvas"></canvas>
 
-<canvas id="spaceCanvas"></canvas>
+  <h1>🌌 太空战小游戏排行榜</h1>
+  <div class="leaderboard" id="leaderboard">载入中...</div>
+  <div style="text-align: center;">
+    <button id="backBtn" onclick="goHome()">返回首页</button>
+  </div>
 
-<h1>🌌 小游戏排行榜</h1>
-<div class="leaderboard" id="leaderboard">载入中...</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-<!-- 返回首页按钮 -->
-<div style="text-align: center; margin-bottom: 40px;">
-  <button id="backBtn" onclick="goHome()">返回首页</button>
-</div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-iUFFdMZqfqOkIdExdq8G9ORyzfutay4",
+      authDomain: "ranking-b8b7.firebaseapp.com",
+      databaseURL: "https://ranking-b8b7-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ranking-b8b7",
+      storageBucket: "ranking-b8b7.appspot.com",
+      messagingSenderId: "1094844971919",
+      appId: "1:1094844971919:web:b526bd952f871bc8f6a9fa",
+      measurementId: "G-NG7CDK13VN"
+    };
 
-<script>
-const canvas = document.getElementById('spaceCanvas');
-const ctx = canvas.getContext('2d');
-let width, height;
-let stars = [];
-let nebulae = [];
-let shootingStars = [];
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-function randomRange(min, max) {
-  return Math.random() * (max - min) + min;
-}
+    const leaderboard = document.getElementById('leaderboard');
 
-function initCanvas() {
-  width = window.innerWidth;
-  height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
+    async function loadRankings() {
+      try {
+        const snapshot = await get(child(ref(db), 'spaceWarRankings'));
+        if (!snapshot.exists()) {
+          leaderboard.innerHTML = "<p style='font-size:1.3em; color:#888'>暂无记录，赶快去玩游戏吧！</p>";
+          return;
+        }
+        let allData = snapshot.val();
+        let rankings = Object.values(allData);
+        rankings.sort((a,b) => b.score - a.score);
 
-  stars = [];
-  for(let i=0; i<300; i++) {
-    stars.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      size: Math.random() * 1.5 + 0.3,
-      alpha: Math.random(),
-      twinkleSpeed: 0.005 + Math.random() * 0.02,
-      twinkleDir: Math.random() > 0.5 ? 1 : -1
-    });
-  }
+        if(rankings.length === 0) {
+          leaderboard.innerHTML = "<p style='font-size:1.3em; color:#888'>暂无记录，赶快去玩游戏吧！</p>";
+          return;
+        }
 
-  nebulae = [];
-  for(let i=0; i<5; i++) {
-    nebulae.push({
-      x: Math.random() * width,
-      y: Math.random() * height * 0.7,
-      radius: randomRange(100, 300),
-      color: `hsla(${randomRange(180, 240)}, 70%, 60%, 0.15)`
-    });
-  }
+        leaderboard.innerHTML = "";
 
-  shootingStars = [];
-}
+        rankings.slice(0, 50).forEach((entry, i) => {
+          const div = document.createElement('div');
+          div.classList.add('player');
 
-function drawStars() {
-  stars.forEach(star => {
-    star.alpha += star.twinkleSpeed * star.twinkleDir;
-    if(star.alpha <= 0 || star.alpha >= 1) {
-      star.twinkleDir *= -1;
-      star.alpha = Math.max(0, Math.min(1, star.alpha));
-    }
-    ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-    ctx.beginPath();
-    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
+          const rankSpan = document.createElement('span');
+          rankSpan.className = 'rank-number';
+          rankSpan.textContent = `${i + 1}.`;
+          div.appendChild(rankSpan);
 
-function drawNebulae() {
-  nebulae.forEach(n => {
-    let gradient = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.radius);
-    gradient.addColorStop(0, n.color);
-    gradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-    ctx.fill();
-  });
-}
+          let crownImg = null;
+          if (i === 0) {
+            div.classList.add('top1');
+            crownImg = document.createElement('img');
+            crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f451.png"; // 皇冠
+            crownImg.classList.add('crown');
+          } else if (i === 1) {
+            div.classList.add('top2');
+            crownImg = document.createElement('img');
+            crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f948.png";
+            crownImg.classList.add('crown');
+          } else if (i === 2) {
+            div.classList.add('top3');
+            crownImg = document.createElement('img');
+            crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f949.png";
+            crownImg.classList.add('crown');
+          } else {
+            div.classList.add('normal');
+          }
 
-function addShootingStar() {
-  shootingStars.push({
-    x: Math.random() * width,
-    y: randomRange(0, height * 0.5),
-    length: randomRange(80, 150),
-    speed: randomRange(6, 10),
-    angle: Math.PI / 4,
-    life: 0,
-    maxLife: randomRange(30, 50)
-  });
-}
+          if (crownImg) div.appendChild(crownImg);
 
-function drawShootingStars() {
-  for(let i = shootingStars.length - 1; i >= 0; i--) {
-    let star = shootingStars[i];
-    star.x += star.speed * Math.cos(star.angle);
-    star.y += star.speed * Math.sin(star.angle);
-    star.life++;
+          const textNode = document.createTextNode(`${entry.name} — ${entry.score}`);
+          div.appendChild(textNode);
 
-    let alpha = 1 - star.life / star.maxLife;
+          leaderboard.appendChild(div);
+        });
 
-    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(star.x, star.y);
-    ctx.lineTo(star.x - star.length * Math.cos(star.angle), star.y - star.length * Math.sin(star.angle));
-    ctx.stroke();
-
-    if(star.life > star.maxLife) {
-      shootingStars.splice(i, 1);
-    }
-  }
-}
-
-let shootingStarTimer = 0;
-function animate() {
-  ctx.clearRect(0, 0, width, height);
-  drawNebulae();
-  drawStars();
-  drawShootingStars();
-  shootingStarTimer++;
-  if (shootingStarTimer > 100) {
-    if (Math.random() < 0.3) addShootingStar();
-    shootingStarTimer = 0;
-  }
-  requestAnimationFrame(animate);
-}
-
-window.addEventListener('resize', initCanvas);
-initCanvas();
-animate();
-
-// 跳转首页函数
-function goHome() {
-  window.location.href = "index.html";
-}
-
-// 排行榜逻辑
-const currentMonth = new Date().getMonth();
-const storedMonth = parseInt(localStorage.getItem("rankingMonth"));
-if (isNaN(storedMonth) || storedMonth !== currentMonth) {
-  localStorage.setItem("spaceWarRankings", "[]");
-  localStorage.setItem("rankingMonth", currentMonth.toString());
-}
-
-let rankings = JSON.parse(localStorage.getItem("spaceWarRankings")) || [];
-rankings.sort((a,b) => b.score - a.score);
-
-const leaderboard = document.getElementById('leaderboard');
-if (rankings.length === 0) {
-  leaderboard.innerHTML = "<p style='font-size:1.3em; color:#888'>暂无记录，赶快去玩游戏吧！</p>";
-} else {
-  leaderboard.innerHTML = "";
-  rankings.slice(0, 50).forEach((entry, i) => {
-    let div = document.createElement('div');
-    div.classList.add('player');
-
-    let rankSpan = document.createElement('span');
-    rankSpan.className = 'rank-number';
-    rankSpan.textContent = `${i + 1}.`;
-    div.appendChild(rankSpan);
-
-    let crownImg = null;
-    if (i === 0) {
-      div.classList.add('top1');
-      crownImg = document.createElement('img');
-      crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f451.png";
-      crownImg.classList.add('crown', 'top1');
-    } else if (i === 1) {
-      div.classList.add('top2');
-      crownImg = document.createElement('img');
-      crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f948.png";
-      crownImg.classList.add('crown', 'top2');
-    } else if (i === 2) {
-      div.classList.add('top3');
-      crownImg = document.createElement('img');
-      crownImg.src = "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/72x72/1f949.png";
-      crownImg.classList.add('crown', 'top3');
-    } else {
-      div.classList.add('normal');
+      } catch (error) {
+        console.error("加载排行榜失败：", error);
+        leaderboard.innerHTML = "<p style='color:red'>排行榜加载失败，请稍后再试。</p>";
+      }
     }
 
-    if (crownImg) div.appendChild(crownImg);
-    let text = document.createTextNode(`${entry.name} — ${entry.score}`);
-    div.appendChild(text);
-    leaderboard.appendChild(div);
-  });
-}
-</script>
+    window.goHome = function () {
+      window.location.href = "index.html";
+    };
 
+    loadRankings();
+
+    // 太空星星背景动画代码
+    const canvas = document.getElementById('spaceCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Star {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.speed = this.size * 0.3;
+        this.alpha = Math.random() * 0.8 + 0.2;
+      }
+      update() {
+        this.x -= this.speed;
+        if (this.x < 0) this.x = width;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 6;
+        ctx.fill();
+      }
+    }
+
+    const stars = [];
+    const STAR_COUNT = 150;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      stars.push(new Star());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      stars.forEach(star => {
+        star.update();
+        star.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>
