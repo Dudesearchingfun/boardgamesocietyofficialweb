@@ -37,6 +37,39 @@
   #nameInputContainer button:hover {
     background-color: #0b7dda;
   }
+
+  /* 新增触屏摇杆和射击按钮样式 */
+  #touchJoystick {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
+    display: none; /* 默认隐藏 */
+    z-index: 1000;
+  }
+  #touchJoystick.active {
+    background: rgba(255, 255, 255, 0.35);
+  }
+  #touchShootBtn {
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    color: white;
+    user-select: none;
+    display: none; /* 默认隐藏 */
+    z-index: 1000;
+  }
 </style>
 </head>
 <body>
@@ -50,11 +83,15 @@
 <canvas id="gameCanvas" width="500" height="700" style="display:none;"></canvas>
 <div id="result"></div>
 
+<!-- 触屏控制元素 -->
+<div id="touchJoystick"></div>
+<button id="touchShootBtn">射击</button>
+
 <!-- Firebase SDK -->
 <script type="module">
   // Import the Firebase modules you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-  import { getDatabase, ref, push, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
   // Your web app's Firebase configuration
   const firebaseConfig = {
@@ -85,7 +122,7 @@
   let score = 0;
   let lives = 5;
   let gameOver = false;
-  let infiniteMode = false; // W key mode
+  let infiniteMode = false; // W key模式（电脑端专属）
   let playerName = "";
 
   let shootCooldown = 0;
@@ -217,6 +254,9 @@
     `;
 
     canvas.style.display = "none";
+    // 隐藏触屏按钮
+    touchJoystick.style.display = 'none';
+    touchShootBtn.style.display = 'none';
   }
 
   function draw() {
@@ -239,7 +279,7 @@
       ctx.textAlign = "center";
       ctx.fillText("游戏结束", canvas.width / 2, canvas.height / 2);
       ctx.font = "20px Arial";
-      ctx.fillText("Made by Ivan :)", canvas.width / 2, canvas.height / 2 + 40);
+      ctx.fillText("请刷新重新开始", canvas.width / 2, canvas.height / 2 + 40);
       ctx.textAlign = "left";
     }
   }
@@ -247,128 +287,175 @@
   function update() {
     if (gameOver) return;
 
-    if (keys["ArrowLeft"]) spaceship.x -= spaceship.speed;
-    if (keys["ArrowRight"]) spaceship.x += spaceship.speed;
-    if (spaceship.x < 0) spaceship.x = 0;
-    if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
-
     if (shootCooldown > 0) shootCooldown--;
 
-    if (infiniteMode && !gameOver) {
-      shoot(true);
+    // 键盘左右移动飞船
+    if (keys["ArrowLeft"] || keys["a"]) {
+      spaceship.x -= spaceship.speed;
+      if (spaceship.x < 0) spaceship.x = 0;
+    }
+    if (keys["ArrowRight"] || keys["d"]) {
+      spaceship.x += spaceship.speed;
+      if (spaceship.x + spaceship.width > canvas.width)
+        spaceship.x = canvas.width - spaceship.width;
     }
 
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      bullets[i].update();
-      if (bullets[i].y < -bullets[i].height) {
-        bullets.splice(i, 1);
-      }
+    // W键开启无敌模式（仅电脑端可用）
+    if (!isTouchDevice() && keys["w"]) {
+      infiniteMode = true;
+      lives = 9999;
+    } else if (!isTouchDevice()) {
+      infiniteMode = false;
     }
 
-    for (let i = enemies.length - 1; i >= 0; i--) {
-      let enemy = enemies[i];
-      enemy.update();
-
-      if (!enemy.fading && enemy.y > canvas.height) {
-        lives--;
-        if (lives <= 0) {
-          endGame();
-        } else {
-          enemy.fading = true;
-        }
-      }
+    if (!infiniteMode && lives <= 0) {
+      endGame();
+      return;
     }
 
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      let b = bullets[i];
-      for (let j = enemies.length - 1; j >= 0; j--) {
-        let e = enemies[j];
-        if (!e.fading &&
+    bullets.forEach((b, i) => {
+      b.update();
+      if (b.y + b.height < 0) bullets.splice(i, 1);
+    });
+
+    enemies.forEach(e => e.update());
+
+    // 碰撞检测：子弹和敌人
+    bullets.forEach((b, bi) => {
+      enemies.forEach((e, ei) => {
+        if (
           b.x < e.x + e.width &&
           b.x + b.width > e.x &&
           b.y < e.y + e.height &&
           b.y + b.height > e.y
         ) {
           e.hp -= b.damage;
-          bullets.splice(i, 1);
-          if (e.hp <= 0) {
-            enemies.splice(j, 1);
-            score += 10;
-
-            if (score % 100 === 0 && score <= 500) {
-              if (enemySpawnInterval > 400) enemySpawnInterval -= 200;
-              enemySpeedMultiplier += 0.2;
-              enemyHPBase += 0.5;
-              if (spacebarBulletDamage < 5) spacebarBulletDamage++;
-              startEnemySpawner();
-            }
-
+          bullets.splice(bi, 1);
+          if (e.hp <= 0 && !e.fading) {
+            e.fading = true;
             explosionSound.currentTime = 0;
             explosionSound.play();
+            score += 10;
+            enemySpeedMultiplier += 0.002;
+            enemyHPBase += 0.01;
           }
-          break;
         }
+      });
+    });
+
+    // 碰撞检测：敌人和飞船
+    enemies.forEach((e) => {
+      if (
+        e.y + e.height > spaceship.y &&
+        e.x + e.width > spaceship.x &&
+        e.x < spaceship.x + spaceship.width &&
+        !e.fading
+      ) {
+        explosionSound.currentTime = 0;
+        explosionSound.play();
+        lives--;
+        e.fading = true;
       }
-    }
-  }
+    });
 
-  function gameLoop() {
-    update();
     draw();
-    if (!gameOver) requestAnimationFrame(gameLoop);
+    requestAnimationFrame(update);
   }
 
-  document.addEventListener("keydown", e => {
-    keys[e.key] = true;
-    if (e.key === " " && !infiniteMode) shoot(false);
-    if (e.key === "w" || e.key === "W") infiniteMode = true;
-  });
-  document.addEventListener("keyup", e => {
-    keys[e.key] = false;
-    if (e.key === "w" || e.key === "W") infiniteMode = false;
+  // 监听键盘事件
+  window.addEventListener("keydown", (e) => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key === " " || e.key === "Spacebar") {
+      e.preventDefault();
+      shoot(false);
+    }
   });
 
-  // Start button handler
-  document.getElementById("startGameBtn").addEventListener("click", () => {
-    const input = document.getElementById("playerNameInput");
-    const name = input.value.trim();
-    if (name.length === 0) {
-      alert("请输入名字才能开始游戏！");
+  window.addEventListener("keyup", (e) => {
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  // 触屏控制代码（新增）
+
+  const touchJoystick = document.getElementById("touchJoystick");
+  const touchShootBtn = document.getElementById("touchShootBtn");
+
+  function isTouchDevice() {
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  }
+
+  if (isTouchDevice()) {
+    touchJoystick.style.display = "block";
+    touchShootBtn.style.display = "block";
+  }
+
+  let joystickCenterX = 0;
+  let dragging = false;
+
+  touchJoystick.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    dragging = true;
+    const touch = e.touches[0];
+    joystickCenterX = touch.clientX;
+    touchJoystick.classList.add("active");
+  });
+
+  touchJoystick.addEventListener("touchmove", (e) => {
+    e.preventDefault();
+    if (!dragging) return;
+    const touch = e.touches[0];
+    let offset = touch.clientX - joystickCenterX;
+
+    // 限制偏移范围
+    if (offset > 40) offset = 40;
+    if (offset < -40) offset = -40;
+
+    // 根据偏移移动飞船，速度调节
+    spaceship.x += offset * 0.15;
+
+    // 限制飞船边界
+    if (spaceship.x < 0) spaceship.x = 0;
+    if (spaceship.x + spaceship.width > canvas.width)
+      spaceship.x = canvas.width - spaceship.width;
+  });
+
+  touchJoystick.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    dragging = false;
+    touchJoystick.classList.remove("active");
+  });
+
+  touchShootBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    shoot(false);
+  });
+
+  // 游戏开始按钮逻辑
+  const startBtn = document.getElementById("startGameBtn");
+  const nameInput = document.getElementById("playerNameInput");
+  const nameInputContainer = document.getElementById("nameInputContainer");
+
+  startBtn.addEventListener("click", () => {
+    const val = nameInput.value.trim();
+    if (val.length === 0) {
+      alert("请输入名字再开始游戏！");
       return;
     }
-    playerName = name;
-
-    document.getElementById("nameInputContainer").style.display = "none";
+    playerName = val;
+    nameInputContainer.style.display = "none";
     canvas.style.display = "block";
-
-    score = 0;
-    lives = 5;
-    gameOver = false;
-    infiniteMode = false;
-    bullets = [];
-    enemies = [];
-    enemySpawnInterval = 1200;
-    enemySpeedMultiplier = 1;
-    enemyHPBase = 1;
-    spacebarBulletDamage = 1;
-    lostChancesUsed = 0;
-    spaceship.x = canvas.width / 2 - 25;
-
+    result.style.display = "none";
     startEnemySpawner();
-    gameLoop();
+    update();
   });
 
-  // Firebase save score function
+  // Firebase存分数
   function saveScoreToFirebase(name, score) {
-    const scoresRef = ref(db, 'spaceWarRankings');
+    const scoresRef = ref(db, "scores");
     push(scoresRef, {
       name: name,
       score: score,
       timestamp: Date.now()
-    }).then(() => {
-      console.log("分数上传成功");
-    }).catch(err => {
-      console.error("上传分数出错:", err);
     });
   }
 </script>
