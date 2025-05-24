@@ -2,38 +2,13 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Space War Game</title>
 <style>
-  body {
-    margin: 0;
-    background: black;
-    overflow: hidden;
-    color: white;
-    font-family: Arial, sans-serif;
-    user-select: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  #gameContainer {
-    position: relative;
-    width: 500px;
-    height: 700px;
-    border: 2px solid white;
-    background: #000;
-    touch-action: none;
-  }
-  canvas {
-    display: block;
-    background: transparent;
-  }
-  #result {
-    text-align: center;
-    margin-top: 10px;
-    font-size: 20px;
-    color: white;
+  body { margin: 0; background: black; overflow: hidden; color: white; font-family: Arial, sans-serif; user-select: none; }
+  canvas { display: block; margin: 0 auto; background: #000; border: 2px solid white; position: relative; z-index: 1; }
+  #result { 
+    text-align: center; margin-top: 10px; font-size: 20px; color: white;
     display: none;
   }
   #nameInputContainer {
@@ -63,60 +38,89 @@
     background-color: #0b7dda;
   }
 
-  /* 手机触屏控件容器 */
+  /* 摇杆和射击按钮容器，放canvas上面 */
   #touchControls {
     position: absolute;
-    bottom: 20px;
-    width: 100%;
-    height: 120px;
-    pointer-events: none; /* 默认不响应事件，按钮和杆会自己覆盖 */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 140px;
+    pointer-events: none; /* 默认不拦截事件 */
+    z-index: 10;
     user-select: none;
   }
 
-  /* 操作杆容器 */
-  #touchJoystick {
+  /* 摇杆背景 */
+  #joystickBase {
     position: absolute;
     bottom: 0;
-    left: 20px;
+    left: 0;
     width: 120px;
     height: 120px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 50%;
-    touch-action: none;
     pointer-events: auto;
+    touch-action: none;
   }
-  #joystickThumb {
+  /* 摇杆操控点 */
+  #joystickKnob {
     position: absolute;
     width: 60px;
     height: 60px;
     background: rgba(255, 255, 255, 0.4);
     border-radius: 50%;
-    top: 30px;
     left: 30px;
+    top: 30px;
+    pointer-events: auto;
     touch-action: none;
+    transition: background 0.2s;
+  }
+  #joystickKnob.active {
+    background: rgba(255, 255, 255, 0.7);
   }
 
   /* 射击按钮 */
-  #touchShootBtn {
+  #shootButton {
     position: absolute;
     bottom: 20px;
-    right: 20px;
-    width: 90px;
-    height: 90px;
+    right: 0;
+    width: 100px;
+    height: 100px;
     background: rgba(255, 0, 0, 0.3);
     border-radius: 50%;
     pointer-events: auto;
     touch-action: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 24px;
+    font-size: 20px;
     color: white;
+    text-align: center;
+    line-height: 100px;
+    font-weight: bold;
     user-select: none;
+    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
   }
-  #touchShootBtn:active {
-    background: rgba(255, 0, 0, 0.7);
+  #shootButton:active {
+    background: rgba(255, 0, 0, 0.6);
+  }
+
+  /* 仅在移动设备显示touchControls，电脑端隐藏 */
+  @media (pointer: coarse) {
+    #touchControls {
+      display: block;
+    }
+  }
+  @media (pointer: fine) {
+    #touchControls {
+      display: none;
+    }
+  }
+
+  /* 包裹canvas和touchControls的对战框 */
+  #gameContainer {
+    position: relative;
+    width: 500px;
+    margin: 0 auto;
   }
 </style>
 </head>
@@ -130,11 +134,13 @@
 
 <div id="gameContainer" style="display:none;">
   <canvas id="gameCanvas" width="500" height="700"></canvas>
-  <div id="touchControls" style="display:none;">
-    <div id="touchJoystick">
-      <div id="joystickThumb"></div>
+
+  <!-- 手机端摇杆和射击按钮 -->
+  <div id="touchControls">
+    <div id="joystickBase">
+      <div id="joystickKnob"></div>
     </div>
-    <div id="touchShootBtn">射击</div>
+    <div id="shootButton">射击</div>
   </div>
 </div>
 
@@ -165,17 +171,13 @@
   const explosionSound = new Audio("https://actions.google.com/sounds/v1/explosions/explosion.ogg");
   const shootSound = new Audio("https://actions.google.com/sounds/v1/weapons/laser_gun.ogg");
 
-  const touchJoystick = document.getElementById("touchJoystick");
-  const joystickThumb = document.getElementById("joystickThumb");
-  const touchShootBtn = document.getElementById("touchShootBtn");
-
   let keys = {};
   let bullets = [];
   let enemies = [];
   let score = 0;
   let lives = 5;
   let gameOver = false;
-  let infiniteMode = false; // 只有电脑有的无敌模式
+  let infiniteMode = false;
   let playerName = "";
 
   let shootCooldown = 0;
@@ -195,7 +197,6 @@
     width: 50,
     height: 60,
     speed: 7,
-    joystickX: 0,
   };
 
   class Bullet {
@@ -299,13 +300,12 @@
 
     const resultDiv = document.getElementById("result");
     resultDiv.style.display = "block";
-    resultDiv.innerHTML = `
-      <p>游戏结束</p>
+    resultDiv.innerHTML = 
+      `<p>游戏结束</p>
       <p>玩家：${playerName}</p>
       <p>得分：${score}</p>
       <button onclick="location.href='minigames.html'">再玩一次</button>
-      <button onclick="location.href='ranking.html'">查看排行榜</button>
-    `;
+      <button onclick="location.href='ranking.html'">查看排行榜</button>`;
 
     document.getElementById("gameContainer").style.display = "none";
   }
@@ -338,15 +338,9 @@
   function update() {
     if (gameOver) return;
 
-    // 电脑按键移动
-    if (!isTouchDevice()) {
-      if (keys["ArrowLeft"]) spaceship.x -= spaceship.speed;
-      if (keys["ArrowRight"]) spaceship.x += spaceship.speed;
-    } else {
-      // 手机触屏操控杆控制
-      spaceship.x += spaceship.joystickX * spaceship.speed;
-    }
-
+    // 电脑键盘左右控制
+    if (keys["ArrowLeft"]) spaceship.x -= spaceship.speed;
+    if (keys["ArrowRight"]) spaceship.x += spaceship.speed;
     if (spaceship.x < 0) spaceship.x = 0;
     if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
 
@@ -377,24 +371,36 @@
       }
     }
 
+    // 碰撞检测
     for (let i = bullets.length - 1; i >= 0; i--) {
       let b = bullets[i];
       for (let j = enemies.length - 1; j >= 0; j--) {
         let e = enemies[j];
-        if (
+        if (!e.fading &&
           b.x < e.x + e.width &&
           b.x + b.width > e.x &&
           b.y < e.y + e.height &&
           b.y + b.height > e.y
         ) {
           e.hp -= b.damage;
-          if (e.hp <= 0) {
-            explosionSound.currentTime = 0;
-            explosionSound.play();
-            score += 10;
-            enemies.splice(j, 1);
-          }
           bullets.splice(i, 1);
+          if (e.hp <= 0) {
+            enemies.splice(j, 1);
+            score += 10;
+
+            if (score % 100 === 0 && score <= 500) {
+              if (enemySpawnInterval > 400) enemySpawnInterval -= 200;
+              enemySpeedMultiplier += 0.2;
+              enemyHPBase++;
+              startEnemySpawner();
+            }
+
+            // 超级模式自动开枪发射更强子弹
+            if (score >= 500) {
+              infiniteMode = true;
+              spacebarBulletDamage = 2;
+            }
+          }
           break;
         }
       }
@@ -403,128 +409,143 @@
     draw();
   }
 
-  function isTouchDevice() {
-    return (
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      navigator.msMaxTouchPoints > 0
-    );
+  function gameLoop() {
+    update();
+    requestAnimationFrame(gameLoop);
   }
 
-  // --- 触屏摇杆实现 ---
+  function saveScoreToFirebase(name, score) {
+    if (!name) return;
+    const scoreRef = ref(db, "scores");
+    push(scoreRef, { name, score });
+  }
+
+  // ===================
+  // 手机摇杆逻辑部分
+  // ===================
+
+  const joystickBase = document.getElementById("joystickBase");
+  const joystickKnob = document.getElementById("joystickKnob");
+  const shootButton = document.getElementById("shootButton");
+
   let joystickActive = false;
   let joystickStartX = 0;
   let joystickStartY = 0;
+  let joystickX = 0;
 
-  touchJoystick.addEventListener("touchstart", (e) => {
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  joystickBase.addEventListener("touchstart", (e) => {
     e.preventDefault();
     joystickActive = true;
-    const touch = e.touches[0];
+    let touch = e.touches[0];
     joystickStartX = touch.clientX;
     joystickStartY = touch.clientY;
+    joystickKnob.classList.add("active");
   });
 
-  touchJoystick.addEventListener("touchmove", (e) => {
+  joystickBase.addEventListener("touchmove", (e) => {
     if (!joystickActive) return;
     e.preventDefault();
-    const touch = e.touches[0];
+    let touch = e.touches[0];
     let deltaX = touch.clientX - joystickStartX;
-    let deltaY = touch.clientY - joystickStartY;
 
-    // 限制移动范围，最大30px半径
-    let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    if (distance > 30) {
-      deltaX = (deltaX / distance) * 30;
-      deltaY = (deltaY / distance) * 30;
-    }
+    // 限制左右移动范围在-40到+40px
+    deltaX = clamp(deltaX, -40, 40);
 
-    joystickThumb.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    joystickKnob.style.transform = `translateX(${deltaX}px)`;
 
-    // 只要左右移动影响 x 轴
-    spaceship.joystickX = deltaX / 30; // -1 ~ 1 之间的值
+    // 根据deltaX映射飞船移动速度
+    joystickX = deltaX / 40; // -1到1之间
   });
 
-  touchJoystick.addEventListener("touchend", (e) => {
+  joystickBase.addEventListener("touchend", (e) => {
     e.preventDefault();
     joystickActive = false;
-    joystickThumb.style.transform = `translate(0px, 0px)`;
-    spaceship.joystickX = 0;
+    joystickKnob.style.transform = "translateX(0)";
+    joystickKnob.classList.remove("active");
+    joystickX = 0;
   });
 
-  // --- 触屏射击按钮 ---
-  touchShootBtn.addEventListener("touchstart", (e) => {
+  // 射击按钮点击
+  shootButton.addEventListener("touchstart", (e) => {
     e.preventDefault();
     shoot(false);
   });
 
-  // --- 键盘事件 ---
-  window.addEventListener("keydown", (e) => {
-    if (gameOver) return;
-    keys[e.key] = true;
-
-    if (e.key === "w" || e.key === "W") {
-      infiniteMode = true;
+  // 让摇杆控制飞船移动
+  function updateJoystickMovement() {
+    if (!gameOver) {
+      spaceship.x += joystickX * spaceship.speed;
+      if (spaceship.x < 0) spaceship.x = 0;
+      if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
     }
-    if (e.key === " " || e.key === "Spacebar") {
-      shoot(false);
-    }
-  });
+  }
 
-  window.addEventListener("keyup", (e) => {
-    keys[e.key] = false;
+  // ===================
+  // 游戏启动和事件监听
+  // ===================
 
-    if (e.key === "w" || e.key === "W") {
-      infiniteMode = false;
-    }
-  });
-
-  // 游戏开始按钮
+  const playerNameInput = document.getElementById("playerNameInput");
   const startGameBtn = document.getElementById("startGameBtn");
-  const nameInput = document.getElementById("playerNameInput");
   const nameInputContainer = document.getElementById("nameInputContainer");
   const gameContainer = document.getElementById("gameContainer");
-  const touchControls = document.getElementById("touchControls");
 
   startGameBtn.addEventListener("click", () => {
-    const nameVal = nameInput.value.trim();
-    if (nameVal.length < 1) {
-      alert("请输入名字！");
+    const name = playerNameInput.value.trim();
+    if (name.length < 1) {
+      alert("请输入有效名字");
       return;
     }
-    playerName = nameVal;
+    playerName = name;
     nameInputContainer.style.display = "none";
     gameContainer.style.display = "block";
+    initGame();
+  });
 
-    if (isTouchDevice()) {
-      touchControls.style.display = "block";
-    }
-
+  function initGame() {
     score = 0;
     lives = 5;
     gameOver = false;
     enemies = [];
     bullets = [];
     lostChancesUsed = 0;
+    infiniteMode = false;
+    enemySpawnInterval = 1200;
+    enemySpeedMultiplier = 1;
+    enemyHPBase = 1;
+    spacebarBulletDamage = 1;
+    spaceship.x = canvas.width / 2 - 25;
 
     startEnemySpawner();
     gameLoop();
+  }
+
+  // 键盘事件监听（仅电脑端）
+  window.addEventListener("keydown", (e) => {
+    if (gameOver) return;
+    keys[e.key] = true;
+    if (e.key === " ") {
+      e.preventDefault();
+      shoot(false);
+    }
   });
 
-  // 游戏循环
-  function gameLoop() {
-    update();
+  window.addEventListener("keyup", (e) => {
+    keys[e.key] = false;
+  });
+
+  // 每帧更新摇杆控制的飞船位置
+  function joystickLoop() {
     if (!gameOver) {
-      requestAnimationFrame(gameLoop);
+      updateJoystickMovement();
     }
+    requestAnimationFrame(joystickLoop);
   }
+  joystickLoop();
 
-  // Firebase写入
-  function saveScoreToFirebase(name, score) {
-    if (!name) return;
-    const scoresRef = ref(db, "scores");
-    push(scoresRef, { name: name, score: score });
-  }
 </script>
-
 </body>
 </html>
