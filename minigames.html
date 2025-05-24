@@ -6,7 +6,8 @@
 <title>Space War Game</title>
 <style>
   body { margin: 0; background: black; overflow: hidden; color: white; font-family: Arial, sans-serif; user-select: none; }
-  canvas { display: block; margin: 0 auto; background: #000; border: 2px solid white; }
+  canvas { display: block; margin: 0 auto; background: #000; border: 2px solid white; touch-action: none; }
+
   #result { 
     text-align: center; margin-top: 10px; font-size: 20px; color: white;
     display: none;
@@ -37,6 +38,73 @@
   #nameInputContainer button:hover {
     background-color: #0b7dda;
   }
+
+  /* 新增 - 手机版对战框尺寸 */
+  #gameContainer {
+    position: relative;
+    width: 360px;  /* 适合手机的宽度 */
+    height: 640px; /* 适合手机的高度 */
+    margin: 0 auto;
+    border: 2px solid white;
+    background: #000;
+    touch-action: none; /* 防止默认触摸滚动 */
+  }
+  #gameCanvas {
+    width: 100% !important;   /* 让canvas撑满容器 */
+    height: 100% !important;
+    display: none;
+  }
+
+  /* 新增 - 摇杆和射击按钮容器 */
+  #joystick {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
+    z-index: 10;
+  }
+
+  #joystickInner {
+    position: absolute;
+    top: 35px;
+    left: 35px;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    touch-action: none;
+  }
+
+  #shootButton {
+    position: absolute;
+    bottom: 30px;
+    right: 20px;
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 0, 0, 0.25);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255,0,0,0.6);
+    touch-action: none;
+    user-select: none;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #shootButton:active {
+    background: rgba(255, 0, 0, 0.5);
+    box-shadow: 0 0 30px rgba(255,0,0,0.9);
+  }
 </style>
 </head>
 <body>
@@ -47,16 +115,26 @@
   <button id="startGameBtn">开始游戏</button>
 </div>
 
-<canvas id="gameCanvas" width="500" height="700" style="display:none;"></canvas>
+<!-- 新增 - 包裹canvas和按钮的容器 -->
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="360" height="640"></canvas>
+
+  <!-- 半透明拉杆 -->
+  <div id="joystick">
+    <div id="joystickInner"></div>
+  </div>
+
+  <!-- 半透明射击按钮 -->
+  <div id="shootButton">射击</div>
+</div>
+
 <div id="result"></div>
 
-<!-- Firebase SDK -->
+<!-- Firebase SDK 和 游戏代码，保持不变，只增加手机控制相关 -->
 <script type="module">
-  // Import the Firebase modules you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-  import { getDatabase, ref, push, query, orderByChild, limitToLast, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+  import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
-  // Your web app's Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyC-iUFFdMZqfqOkIdExdq8G9ORyzfutay4",
     authDomain: "ranking-b8b7.firebaseapp.com",
@@ -68,11 +146,10 @@
     measurementId: "G-NG7CDK13VN"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Game code below
+  const container = document.getElementById("gameContainer");
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
 
@@ -85,7 +162,7 @@
   let score = 0;
   let lives = 5;
   let gameOver = false;
-  let infiniteMode = false; // W key mode
+  let infiniteMode = false;
   let playerName = "";
 
   let shootCooldown = 0;
@@ -216,7 +293,7 @@
       <button onclick="location.href='ranking.html'">查看排行榜</button>
     `;
 
-    canvas.style.display = "none";
+    container.style.display = "none";
   }
 
   function draw() {
@@ -247,8 +324,15 @@
   function update() {
     if (gameOver) return;
 
+    // 移动根据摇杆偏移量控制，这里先用keys作为备选
     if (keys["ArrowLeft"]) spaceship.x -= spaceship.speed;
     if (keys["ArrowRight"]) spaceship.x += spaceship.speed;
+
+    // 手机摇杆控制
+    if (joystickActive) {
+      spaceship.x += joystickDeltaX * spaceship.speed;
+    }
+
     if (spaceship.x < 0) spaceship.x = 0;
     if (spaceship.x + spaceship.width > canvas.width) spaceship.x = canvas.width - spaceship.width;
 
@@ -328,7 +412,7 @@
     if (e.key === "w" || e.key === "W") infiniteMode = false;
   });
 
-  // Start button handler
+  // start按钮处理
   document.getElementById("startGameBtn").addEventListener("click", () => {
     const input = document.getElementById("playerNameInput");
     const name = input.value.trim();
@@ -339,6 +423,7 @@
     playerName = name;
 
     document.getElementById("nameInputContainer").style.display = "none";
+    container.style.display = "block";
     canvas.style.display = "block";
 
     score = 0;
@@ -358,19 +443,75 @@
     gameLoop();
   });
 
-  // Firebase save score function
+  // 保存分数到Firebase
   function saveScoreToFirebase(name, score) {
-    const scoresRef = ref(db, 'spaceWarRankings');
-    push(scoresRef, {
-      name: name,
-      score: score,
-      timestamp: Date.now()
-    }).then(() => {
-      console.log("分数上传成功");
-    }).catch(err => {
-      console.error("上传分数出错:", err);
-    });
-  }
+  const scoresRef = ref(db, "spaceWarRankings");
+  push(scoresRef, { name, score });
+}
+
+  // ** 以下为新增的手机摇杆及射击按钮功能 **
+
+  const joystick = document.getElementById("joystick");
+  const joystickInner = document.getElementById("joystickInner");
+  const shootButton = document.getElementById("shootButton");
+
+  let joystickActive = false;
+  let joystickStartX = 0;
+  let joystickStartY = 0;
+  let joystickDeltaX = 0;
+
+  joystick.addEventListener("touchstart", e => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      joystickActive = true;
+      joystickStartX = e.touches[0].clientX;
+      joystickStartY = e.touches[0].clientY;
+      joystickInner.style.transform = `translate(0px, 0px)`;
+    }
+  }, { passive: false });
+
+  joystick.addEventListener("touchmove", e => {
+    e.preventDefault();
+    if (joystickActive && e.touches.length === 1) {
+      const touch = e.touches[0];
+      let deltaX = touch.clientX - joystickStartX;
+      let deltaY = touch.clientY - joystickStartY;
+
+      // 限制摇杆移动范围最大40px
+      const maxDistance = 40;
+      const dist = Math.min(Math.sqrt(deltaX*deltaX + deltaY*deltaY), maxDistance);
+      const angle = Math.atan2(deltaY, deltaX);
+      deltaX = dist * Math.cos(angle);
+      deltaY = dist * Math.sin(angle);
+
+      joystickInner.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+      // 我们只需要横向偏移影响飞船左右移动
+      joystickDeltaX = deltaX / maxDistance; // -1 ~ 1
+    }
+  }, { passive: false });
+
+  joystick.addEventListener("touchend", e => {
+    e.preventDefault();
+    joystickActive = false;
+    joystickInner.style.transform = `translate(0px, 0px)`;
+    joystickDeltaX = 0;
+  }, { passive: false });
+
+  // 射击按钮点击事件
+  shootButton.addEventListener("touchstart", e => {
+    e.preventDefault();
+    shoot(false);
+    shootButton.style.background = "rgba(255, 0, 0, 0.5)";
+  }, { passive: false });
+  shootButton.addEventListener("touchend", e => {
+    e.preventDefault();
+    shootButton.style.background = "rgba(255, 0, 0, 0.25)";
+  }, { passive: false });
+
+  // 让画面开始时隐藏游戏区，等待玩家输入名字
+  container.style.display = "none";
+
 </script>
 </body>
 </html>
