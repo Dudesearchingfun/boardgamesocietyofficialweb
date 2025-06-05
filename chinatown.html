@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>Chinatown 游戏规则</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC&display=swap');
+
+  body {
+    margin: 0;
+    background: #fdf6f0;
+    font-family: 'Noto Sans SC', sans-serif;
+    color: #5a2a0c;
+    padding: 20px;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #a32707;
+    margin-bottom: 0.4em;
+    text-shadow: 1px 1px 3px #f0b48f;
+  }
+  .section {
+    max-width: 850px;
+    margin: 25px auto;
+    background: #fff7f0;
+    border-radius: 18px;
+    padding: 25px 30px;
+    box-shadow: 0 0 35px #db7a2b88;
+  }
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.2em;
+  }
+  ul, ol {
+    margin-left: 25px;
+    margin-bottom: 1.2em;
+    color: #7a3a0f;
+    font-weight: 600;
+  }
+
+  /* 卡牌和组件格子布局 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+    justify-items: center;
+  }
+  .card {
+    width: 160px;
+    background: #fff4e6;
+    border-radius: 22px;
+    box-shadow:
+      0 0 12px #db7a2b88,
+      inset 0 0 18px #e88c3e77;
+    padding: 15px 12px;
+    box-sizing: border-box;
+    color: #843100;
+    font-weight: 700;
+    cursor: default;
+    text-align: center;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card-text {
+    margin-top: 12px;
+    font-size: 1rem;
+    line-height: 1.3;
+    min-height: 46px; /* 保持文字区高度一致 */
+  }
+
+  /* 红灯笼 */
+  .lantern {
+    position: relative;
+    width: 80px;
+    height: 110px;
+    background: radial-gradient(circle at center, #e82c1a, #a61c10);
+    border-radius: 45% / 50%;
+    box-shadow: 0 0 16px #e8331faa inset;
+  }
+  .lantern::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    width: 52px;
+    height: 84px;
+    background: repeating-linear-gradient(
+      90deg,
+      #a91909,
+      #a91909 6px,
+      #e7351b 7px,
+      #e7351b 12px
+    );
+    border-radius: 42% / 45%;
+    box-shadow: 0 0 15px #ee3a2020 inset;
+  }
+  .lantern::after {
+    content: "";
+    position: absolute;
+    bottom: 8px;
+    left: 38px;
+    width: 4px;
+    height: 18px;
+    background: #7f1c0a;
+    border-radius: 4px;
+    box-shadow:
+      0 4px 0 #7f1c0a,
+      0 8px 0 #7f1c0a;
+  }
+
+  /* 金元宝 */
+  .ingot {
+    position: relative;
+    width: 90px;
+    height: 70px;
+    background: linear-gradient(135deg, #fce456, #c7a800);
+    border-radius: 20% 20% 50% 50% / 40% 40% 60% 60%;
+    box-shadow:
+      0 0 16px #fddc36cc inset,
+      0 6px 12px #d1ab00cc;
+  }
+  .ingot::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 12px;
+    width: 66px;
+    height: 40px;
+    background: linear-gradient(145deg, #fde949cc, #b68d00);
+    border-radius: 50% / 60%;
+    box-shadow: 0 2px 10px #d7b411cc inset;
+  }
+  .ingot::after {
+    content: "";
+    position: absolute;
+    bottom: 6px;
+    left: 35px;
+    width: 20px;
+    height: 20px;
+    background: #fef364;
+    border-radius: 50%;
+    box-shadow:
+      0 0 8px #f7ea53cc,
+      0 3px 10px #b39100cc inset;
+  }
+
+  /* 红包 */
+  .red-envelope {
+    position: relative;
+    width: 100px;
+    height: 130px;
+    background: linear-gradient(180deg, #e83129, #a11912);
+    border-radius: 20px 20px 45px 45px;
+    box-shadow: 0 0 18px #e8302aaa inset;
+    overflow: visible;
+  }
+  .red-envelope::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 6px solid #f8c93b;
+    box-shadow: 0 0 20px #f5cc3aaa;
+  }
+  .red-envelope .fu-char {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin: -30px 0 0 -30px;
+    font-size: 48px;
+    font-weight: 900;
+    color: #f9d646;
+    text-shadow: 1px 1px 5px #a87b03;
+    font-family: 'Noto Sans SC', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+  }
+
+  /* 窗花 */
+  .window-flower {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background: #a32808;
+    border-radius: 16px;
+    box-shadow:
+      0 0 18px #bf4a15,
+      inset 0 0 25px #d5631e;
+  }
+  .window-flower::before, .window-flower::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #fdd85a;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #fbb91d;
+  }
+  .window-flower::before {
+    top: 15px;
+    left: 15px;
+  }
+  .window-flower::after {
+    bottom: 15px;
+    right: 15px;
+  }
+  .window-flower div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #fef9a2, #a65400);
+    box-shadow: 0 0 10px #ffdb45;
+  }
+
+  /* 布局 */
+  .component-row {
+    display: flex;
+    justify-content: center;
+    gap: 38px;
+    margin-top: 26px;
+    align-items: flex-start; /* 顶部对齐 */
+  }
+
+  /* 组件下文字 */
+  .component-text {
+    margin-top: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #7a3a0f;
+    min-height: 44px; /* 保持所有文字高度一致 */
+  }
+
+  /* 说明区段 */
+  .description {
+    max-width: 720px;
+    margin: 35px auto 10px;
+    font-size: 1.15rem;
+    color: #793312;
+    line-height: 1.7;
+  }
+
+  /* 按钮 */
+  .button {
+    display: block;
+    width: max-content;
+    margin: 40px auto 10px;
+    padding: 14px 40px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 36px;
+    background: #b94b0a;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 0 24px #f98a20cc;
+    user-select: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  .button:hover {
+    background: #7d2a01;
+  }
+</style>
+</head>
+<body>
+  <h1>Chinatown 游戏规则</h1>
+
+  <div class="section description">
+    <p>Chinatown 是一款经典的交易和谈判类桌游，玩家经营各自的唐人街摊位，通过买卖物业和协商交易来积累财富。</p>
+  </div>
+
+  <div class="section description">
+    <h2>游戏目标</h2>
+    <p>通过交易获得最多的钱，成为唐人街最富有的老板。</p>
+  </div>
+
+  <div class="section description">
+    <h2>游戏组件</h2>
+    <div class="component-row">
+      <div class="card">
+        <div class="lantern" aria-label="红灯笼装饰"></div>
+        <div class="component-text">红灯笼<br>装饰象征好运</div>
+      </div>
+      <div class="card">
+        <div class="ingot" aria-label="金元宝"></div>
+        <div class="component-text">金元宝<br>游戏货币</div>
+      </div>
+      <div class="card">
+        <div class="red-envelope" aria-label="红包">
+          <div class="fu-char">福</div>
+        </div>
+        <div class="component-text">红包<br>用于交易时赠送</div>
+      </div>
+      <div class="card">
+        <div class="window-flower" aria-label="传统窗花">
+          <div></div>
+        </div>
+        <div class="component-text">窗花<br>唐人街建筑装饰</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section description">
+    <h2>游戏玩法</h2>
+    <ol>
+      <li>玩家轮流操作，可以选择交易、购买或出售物业。</li>
+      <li>通过谈判达成交易，调整自己的资产布局。</li>
+      <li>合理投资物业，提升收益，争夺最有价值的地段。</li>
+      <li>游戏在物业被全部交易完毕或达成时间限制后结束。</li>
+      <li>统计各玩家财富，最高者获胜。</li>
+    </ol>
+  </div>
+
+  <div class="section description">
+    <h2>胜利条件</h2>
+    <ul>
+      <li>拥有最多现金和物业资产的玩家获胜。</li>
+      <li>善于谈判和投资是关键。</li>
+    </ul>
+  </div>
+
+  <a href="games.html" class="button">⬅ 返回游戏列表</a>
+</body>
+</html>

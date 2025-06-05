@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>阿瓦隆（Avalon）游戏规则</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Ma Shan Zheng', cursive;
+      background: radial-gradient(circle at top, #1e2a38 0%, #0a0f1c 100%);
+      color: #cfd8ff;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    h1, h2 {
+      color: #ffd700;
+      text-align: center;
+      text-shadow: 0 0 8px #f7d560;
+    }
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 0 20px rgba(100, 200, 255, 0.15);
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      justify-items: center;
+      margin-top: 10px;
+    }
+    .card {
+      width: 100px;
+      height: 140px;
+      background: linear-gradient(145deg, #1e2a38, #2a3c4d);
+      border: 2px solid #6ca0ff;
+      border-radius: 10px;
+      color: #cfd8ff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 0 12px rgba(100, 200, 255, 0.3);
+    }
+    .card::before {
+      content: "🧝‍♂️";
+      font-size: 36px;
+      display: block;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #5468ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    a.button:hover {
+      background: #3b4cd1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>阿瓦隆（The Resistance: Avalon）游戏规则</h1>
+
+  <div class="section">
+    <h2>🎯 游戏目标</h2>
+    <p><strong>忠诚的亚瑟势力</strong>必须成功完成三次任务；<strong>邪恶的莫德雷德势力</strong>则要破坏任务或刺杀梅林。</p>
+  </div>
+
+  <div class="section">
+    <h2>🎭 游戏角色</h2>
+    <ul>
+      <li>梅林（Merlin）：知道谁是坏人，但必须隐藏身份</li>
+      <li>刺客（Assassin）：可以在游戏结束刺杀梅林</li>
+      <li>亚瑟忠臣（Servants of Arthur）</li>
+      <li>莫德雷德爪牙（Minions of Mordred）</li>
+      <li>可选角色：派西维尔（Percival）、莫德雷德（Mordred）、摩甘娜（Morgana）、奥伯隆（Oberon）等</li>
+    </ul>
+    <div class="card-grid">
+      <div class="card">梅林</div>
+      <div class="card">刺客</div>
+      <div class="card">忠臣</div>
+      <div class="card">爪牙</div>
+      <div class="card">派西维尔</div>
+      <div class="card">摩甘娜</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎮 游戏流程</h2>
+    <ol>
+      <li><strong>身份分配</strong>：每位玩家随机获得角色卡，秘密查看。</li>
+      <li><strong>夜晚阶段</strong>：梅林、爪牙、刺客等角色依照规则睁眼确认。</li>
+      <li><strong>任务提名</strong>：队长轮流提名任务小队，其他玩家投票是否通过。</li>
+      <li><strong>执行任务</strong>：任务成员秘密投“成功”或“失败”票。</li>
+      <li><strong>胜负判断</strong>：
+        <ul>
+          <li>亚瑟阵营：3次任务成功</li>
+          <li>莫德雷德阵营：任务失败3次，或最后成功后刺杀梅林成功</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🗡️ 特殊机制</h2>
+    <ul>
+      <li>第五轮任务可能需要两张“失败”票才算失败（5人以上）</li>
+      <li>梅林必须隐藏身份，否则容易被刺杀</li>
+      <li>派西维尔知道哪两人中有一人为梅林（可能被摩甘娜混淆）</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🏆 游戏胜利条件</h2>
+    <p>游戏结束有两种情况：</p>
+    <ul>
+      <li><strong>忠诚方完成3次任务后</strong>，刺客尝试刺杀梅林</li>
+      <li>如果刺杀正确，<strong>邪恶方获胜</strong>；否则 <strong>亚瑟方胜利</strong></li>
+      <li>如果3次任务失败，<strong>邪恶方直接胜利</strong></li>
+    </ul>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <a href="games.html" class="button">⬅ 返回游戏列表</a>
+  </div>
+
+</body>
+</html>

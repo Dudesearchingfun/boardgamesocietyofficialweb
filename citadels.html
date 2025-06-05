@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>富饶之城（Citadels）游戏规则</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      background: linear-gradient(to bottom right, #f0e6d2, #d3c0b0);
+      color: #333;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    h1, h2 {
+      color: #6b4f3b;
+      text-align: center;
+    }
+    .section {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      justify-items: center;
+    }
+    .card {
+      width: 100px;
+      height: 140px;
+      background: #fff;
+      border: 2px solid #6b4f3b;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      text-align: center;
+    }
+    .card::before {
+      content: "🏰";
+      font-size: 36px;
+      display: block;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #6b4f3b;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    a.button:hover {
+      background: #4e3624;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>富饶之城（Citadels）游戏规则</h1>
+
+  <div class="section">
+    <h2>🎯 游戏目标</h2>
+    <p>通过策略性地选择角色和建造建筑，成为最富有的城市建造者。游戏结束时，分数最高的玩家获胜。</p>
+  </div>
+
+  <div class="section">
+    <h2>🧩 游戏组件</h2>
+    <ul>
+      <li>27 张角色卡</li>
+      <li>84 张建筑卡</li>
+      <li>30 张紫色特殊建筑卡</li>
+      <li>1 个皇冠标记</li>
+      <li>金币若干</li>
+    </ul>
+    <div class="card-grid">
+      <div class="card">角色卡</div>
+      <div class="card">建筑卡</div>
+      <div class="card">特殊建筑</div>
+      <div class="card">金币</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🛠️ 游戏设置</h2>
+    <ol>
+      <li>每位玩家初始获得2张建筑卡和2枚金币。</li>
+      <li>将角色卡洗牌，准备角色选择阶段。</li>
+      <li>确定第一位拥有皇冠的玩家。</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🕹️ 游戏流程</h2>
+    <ol>
+      <li><strong>角色选择阶段：</strong>拥有皇冠的玩家开始，从角色卡中选择一张，传给下一位玩家，直到每位玩家都有一张角色卡。</li>
+      <li><strong>角色行动阶段：</strong>按照角色编号顺序，玩家依次揭示并执行角色的特殊能力和建造操作。</li>
+      <li><strong>回合结束：</strong>所有玩家完成行动后，开始新一轮的角色选择。</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🧙‍♂️ 角色功能示例</h2>
+    <div class="card-grid">
+      <div class="card">刺客<br>选择一个角色，使其本轮跳过行动。</div>
+      <div class="card">盗贼<br>窃取目标角色的所有金币。</div>
+      <div class="card">魔法师<br>与他人交换手牌或弃掉手牌再抽新牌。</div>
+      <div class="card">国王<br>获得皇冠，并从黄色建筑中获得金币。</div>
+      <div class="card">主教<br>从蓝色建筑中获得金币，建筑免受摧毁。</div>
+      <div class="card">商人<br>从绿色建筑中获得金币，并额外获得1金币。</div>
+      <div class="card">建筑师<br>抽两张建筑卡，本回合可建造最多三座建筑。</div>
+      <div class="card">军阀<br>支付金币摧毁他人已建的建筑。</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🏆 游戏胜利</h2>
+    <p>当有玩家建造了第八座建筑时，游戏进入最后一轮。所有玩家完成该轮后，进行计分：</p>
+    <ul>
+      <li>建筑卡上的分数总和。</li>
+      <li>拥有所有五种颜色建筑的玩家获得额外3分。</li>
+      <li>最先建成八座建筑的玩家获得额外4分。</li>
+      <li>其他建成八座建筑的玩家获得额外2分。</li>
+    </ul>
+    <p>最终分数最高的玩家获胜。</p>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <a href="games.html" class="button">⬅ 返回游戏列表</a>
+  </div>
+
+</body>
+</html>

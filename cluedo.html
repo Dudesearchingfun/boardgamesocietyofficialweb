@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Cluedo（妙探寻凶）游戏规则</title>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Special Elite', cursive;
+      background: linear-gradient(to bottom, #1c1c1c, #000000);
+      color: #e2e2e2;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    h1, h2 {
+      color: #ffcc00;
+      text-align: center;
+      text-shadow: 0 0 8px #ff0;
+    }
+    .section {
+      background: rgba(50, 50, 50, 0.8);
+      border: 2px dashed #ffcc00;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      justify-items: center;
+      margin-top: 10px;
+    }
+    .card {
+      width: 120px;
+      height: 160px;
+      background: #2f2f2f;
+      border: 2px solid #ffcc00;
+      border-radius: 10px;
+      color: #fff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: inset 0 0 8px rgba(255, 255, 0, 0.3);
+    }
+    .card::before {
+      content: "🕵️";
+      font-size: 36px;
+      display: block;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #444;
+      color: #ffcc00;
+      text-decoration: none;
+      border-radius: 8px;
+      border: 1px solid #ffcc00;
+      transition: background 0.3s ease;
+    }
+    a.button:hover {
+      background: #222;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Cluedo（妙探寻凶）游戏规则</h1>
+
+  <div class="section">
+    <h2>🔍 游戏目标</h2>
+    <p>找出谋杀案的三大关键要素：</p>
+    <ul>
+      <li><strong>凶手是谁？</strong></li>
+      <li><strong>在哪个房间犯案？</strong></li>
+      <li><strong>使用了哪种武器？</strong></li>
+    </ul>
+    <p>第一个正确揭示这三项内容的玩家获胜。</p>
+  </div>
+
+  <div class="section">
+    <h2>🧩 游戏组件</h2>
+    <ul>
+      <li>6 名嫌疑人角色卡</li>
+      <li>6 种武器卡</li>
+      <li>9 间房间卡</li>
+      <li>游戏板（房间分布）</li>
+      <li>骰子、笔记本、人物棋子</li>
+    </ul>
+    <div class="card-grid">
+      <div class="card">嫌疑人</div>
+      <div class="card">武器</div>
+      <div class="card">房间</div>
+      <div class="card">骰子</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎮 游戏流程</h2>
+    <ol>
+      <li>每位玩家选择角色，角色棋子放在指定起点。</li>
+      <li>从嫌疑人、武器、房间中各抽一张，放入秘密信封（即正确答案）。</li>
+      <li>剩下的卡牌平均分给所有玩家。</li>
+      <li>轮流掷骰，移动角色，进入房间后可提出“指控”。</li>
+      <li>提出指控示例：“我怀疑是 绿女士，在 图书馆，用 绳子。”</li>
+      <li>下一位玩家若有其中任何一张卡牌，必须秘密展示一张反驳。</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🧠 推理笔记建议</h2>
+    <p>记录每位玩家展示或未展示的信息，逐步排除不可能项，推理出真相。</p>
+  </div>
+
+  <div class="section">
+    <h2>⚖️ 最终指控</h2>
+    <ul>
+      <li>玩家在自己回合可以做一次“最终指控”。</li>
+      <li>若猜对信封内三张卡牌：立即胜利。</li>
+      <li>若猜错：该玩家退出游戏，不再行动，但仍须展示卡牌反驳他人指控。</li>
+    </ul>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <a href="games.html" class="button">⬅ 返回游戏列表</a>
+  </div>
+
+</body>
+</html>

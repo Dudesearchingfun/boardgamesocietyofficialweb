@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>Dixit 游戏规则</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
+  body {
+    margin: 0;
+    background: #f3eefb;
+    font-family: 'Pacifico', cursive;
+    color: #4b2f70;
+    padding: 20px;
+    user-select: none;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #6b3fa0;
+    margin-bottom: 0.3em;
+    text-shadow: 1px 1px 3px #d4b6f7;
+  }
+  .section {
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff7ff;
+    border-radius: 20px;
+    padding: 25px 30px;
+    box-shadow: 0 0 45px #b79cf9cc;
+  }
+  p {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    margin-bottom: 1em;
+    color: #5b3e8a;
+    text-align: justify;
+  }
+  ul, ol {
+    margin-left: 20px;
+    margin-bottom: 1em;
+    color: #7d59b7;
+    font-weight: 700;
+  }
+
+  /* 卡牌格子容器 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 22px;
+    margin-top: 32px;
+    justify-items: center;
+  }
+
+  /* 每个卡牌格子 */
+  .card {
+    width: 160px;
+    background: #fef7ff;
+    border-radius: 24px;
+    box-shadow:
+      0 0 8px #cba9faaa,
+      inset 0 0 18px #a080fca0;
+    padding: 15px;
+    box-sizing: border-box;
+    color: #5a3685;
+    font-weight: 700;
+    cursor: default;
+    text-align: center;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card-text {
+    margin-top: 12px;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  /* 叙述者帽子细节 */
+  .storyteller-hat {
+    position: relative;
+    width: 110px;
+    height: 88px;
+    background: linear-gradient(135deg, #8b59f2, #542eb8);
+    border-radius: 60% 60% 25% 25% / 75% 75% 25% 25%;
+    box-shadow: 0 0 18px #8257f9 inset;
+  }
+  .storyteller-hat::before {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: 25px;
+    width: 60px;
+    height: 28px;
+    background: linear-gradient(135deg, #bca3fc, #5e3bbc);
+    border-radius: 28px;
+    box-shadow: inset 0 5px 12px #6e55db;
+  }
+  .storyteller-hat::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 45px;
+    width: 25px;
+    height: 24px;
+    background: #42288e;
+    border-radius: 20px 20px 0 0;
+    box-shadow: inset 0 5px 7px #341f6e;
+  }
+
+  /* 投票标记 - 金光闪闪 */
+  .vote-token {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle at center, #fde64f, #f6b800);
+    border-radius: 50%;
+    box-shadow:
+      0 0 40px #fcd541aa,
+      inset 0 0 20px #f7c32e;
+  }
+  .vote-token::before {
+    content: "✔";
+    position: absolute;
+    top: 18px;
+    left: 32px;
+    font-size: 58px;
+    color: #6b4d00;
+    font-weight: 900;
+    text-shadow: 1px 1px 3px #f7e94c;
+  }
+
+  /* Dixit卡牌艺术 - 细节丰富 */
+  .dixit-card-art {
+    position: relative;
+    width: 140px;
+    height: 120px;
+    background: linear-gradient(135deg, #cba0ff, #6549bd);
+    border-radius: 26px;
+    box-shadow: inset 0 0 35px #7a5bc7;
+    overflow: visible;
+  }
+
+  /* 卡牌内大块光晕 */
+  .dixit-card-art .glow-shape {
+    position: absolute;
+    top: 20px;
+    left: 18px;
+    width: 90px;
+    height: 68px;
+    background: linear-gradient(45deg, #9f76ff, #573aad);
+    border-radius: 30px 60px 60px 30px;
+    box-shadow:
+      0 0 25px 4px #b499ff,
+      0 0 45px 9px #805ed3;
+    animation: floaty 7s ease-in-out infinite;
+  }
+
+  /* 半透明魔法球 */
+  .dixit-card-art .magic-orb {
+    position: absolute;
+    top: 55px;
+    left: 65px;
+    width: 30px;
+    height: 30px;
+    background: rgba(255 255 255 / 0.4);
+    border-radius: 50%;
+    box-shadow: 0 0 20px 8px #bb9aff88;
+    animation: pulse-orb 4s ease-in-out infinite alternate;
+  }
+
+  /* 梦幻弧形彩虹 */
+  .dixit-card-art .rainbow-arc {
+    position: absolute;
+    top: 18px;
+    left: 14px;
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    border: 7px solid transparent;
+    border-top: 7px solid #f7b9ffa3;
+    border-right: 7px solid #7a51dbb3;
+    box-shadow: 0 0 28px #b38effc7;
+    filter: drop-shadow(0 0 6px #b594ffc9);
+    transform-origin: center;
+    animation: spin-arc 14s linear infinite;
+  }
+
+  /* 花纹叠加 */
+  .dixit-card-art .pattern {
+    position: absolute;
+    top: 40px;
+    left: 38px;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #fff0ff80, transparent 80%);
+    filter: blur(5px);
+    animation: pulse-orb 3.7s ease-in-out infinite alternate;
+  }
+
+  /* 动画关键帧 */
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes pulse-orb {
+    0% { opacity: 0.55; }
+    100% { opacity: 1; }
+  }
+  @keyframes spin-arc {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* 按钮样式 */
+  .button {
+    display: block;
+    width: max-content;
+    margin: 35px auto 0;
+    padding: 14px 34px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 36px;
+    background: #7b3fa0;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 0 28px #a674f7cc;
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+  }
+  .button:hover {
+    background: #5a2382;
+  }
+
+</style>
+</head>
+<body>
+  <h1>Dixit 游戏规则</h1>
+
+  <div class="section">
+    <h2>🎨 游戏简介</h2>
+    <p>Dixit 是一款充满想象力和创意的叙述类卡牌游戏，玩家通过描述手中美丽的图画卡牌，猜测谁是叙述者并获得分数。</p>
+  </div>
+
+  <div class="section">
+    <h2>🎯 游戏目标</h2>
+    <p>成为获得最多分数的玩家，获得最多投票支持的叙述者获胜。</p>
+  </div>
+
+  <div class="section">
+    <h2>🃏 主要游戏组件</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="storyteller-hat" aria-label="叙述者标记，魔法帽形状"></div>
+        <div class="card-text">叙述者标记<br>代表本轮讲故事的玩家</div>
+      </div>
+      <div class="card">
+        <div class="dixit-card-art" aria-label="Dixit 梦幻卡牌艺术示意">
+          <div class="glow-shape"></div>
+          <div class="magic-orb"></div>
+          <div class="rainbow-arc"></div>
+          <div class="pattern"></div>
+        </div>
+        <div class="card-text">卡牌示意<br>梦幻细腻的艺术</div>
+      </div>
+      <div class="card">
+        <div class="vote-token" aria-label="投票标记，金色光环"></div>
+        <div class="card-text">投票标记<br>选择你认为正确的卡牌</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔄 游戏流程</h2>
+    <ol>
+      <li>叙述者从手牌选择一张卡牌，并给出一句描述（词语、句子或声音）。</li>
+      <li>其他玩家选择一张手牌来配合叙述者的描述。</li>
+      <li>所有选择的卡牌洗牌后展示。</li>
+      <li>玩家投票猜测哪张是叙述者的卡牌。</li>
+      <li>根据猜测结果给予分数奖励。</li>
+      <li>游戏持续若干轮，分数最高者获胜。</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🏆 胜利条件</h2>
+    <ul>
+      <li>累计获得最高分数的玩家获胜。</li>
+      <li>鼓励创造力和描述的巧妙性。</li>
+    </ul>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <a href="games.html" class="button">⬅ 返回游戏列表</a>
+  </div>
+</body>
+</html>

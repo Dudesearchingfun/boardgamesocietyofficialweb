@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Sushi Go Party! 游戏规则</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'ZCOOL KuaiLe', cursive;
+      background: linear-gradient(to right top, #ffe0f0, #e0f7ff);
+      color: #333;
+      padding: 20px;
+      line-height: 1.8;
+    }
+    h1, h2 {
+      color: #8e24aa;
+      text-align: center;
+    }
+    .section {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      justify-items: center;
+    }
+    .card {
+      width: 100px;
+      height: 140px;
+      background: white;
+      border: 3px dashed #f48fb1;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      text-align: center;
+    }
+    .card::before {
+      content: "🍣";
+      font-size: 36px;
+      display: block;
+    }
+    a.button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #ab47bc;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    a.button:hover {
+      background: #7b1fa2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sushi Go Party! 游戏规则</h1>
+
+  <div class="section">
+    <h2>🎯 游戏目标</h2>
+    <p>玩家在三轮中选取并打出卡牌，尝试搭配出高分组合，最终得分最高者获胜。</p>
+  </div>
+
+  <div class="section">
+    <h2>🎉 游戏组件</h2>
+    <ul>
+      <li>181 张多样化卡牌（更多种类）</li>
+      <li>22 个菜单图块（用来选择使用哪些卡牌）</li>
+      <li>游戏计分板 + 玩家棋子</li>
+      <li>最多支持 <strong>8 位玩家</strong></li>
+    </ul>
+    <div class="card-grid">
+      <div class="card">菜单图块</div>
+      <div class="card">寿司卡</div>
+      <div class="card">甜点卡</div>
+      <div class="card">技巧卡</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📦 游戏设置</h2>
+    <ol>
+      <li>将计分板放在中央，每位玩家选一个棋子放在起点。</li>
+      <li>从菜单图块中选出以下卡组组成菜单：
+        <ul>
+          <li>1种主菜</li>
+          <li>1种甜点</li>
+          <li>3种配菜</li>
+          <li>2种技巧卡</li>
+        </ul>
+      </li>
+      <li>根据玩家人数分配手牌（如8人发7张）</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🕹️ 游戏流程</h2>
+    <ol>
+      <li>每轮开始，所有玩家同时从手牌中选择1张面朝下打出。</li>
+      <li>然后将剩余牌传给下一位玩家。</li>
+      <li>所有人揭示打出的牌。</li>
+      <li>重复直到手牌用完。</li>
+      <li>根据菜单所列卡牌效果进行计分。</li>
+      <li>进行下一轮，共3轮。</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>🧮 计分方式（部分示例）</h2>
+    <div class="card-grid">
+      <div class="card">豆腐<br>越多得分越高</div>
+      <div class="card">乌冬<br>每对得5分</div>
+      <div class="card">拉面<br>不同分值规则</div>
+      <div class="card">味增汤<br>集齐得分</div>
+      <div class="card">布丁<br>游戏结束额外加减分</div>
+      <div class="card">筷子<br>一次选两张</div>
+    </div>
+    <p>每种菜单卡有不同计分方式，游戏板上会提醒具体规则。</p>
+  </div>
+
+  <div class="section">
+    <h2>🏆 游戏胜利</h2>
+    <p>三轮结束后，玩家将三轮分数相加，再加上甜点（如布丁）奖励或惩罚，最终得分最高者获胜！</p>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <a href="games.html" class="button">⬅ 返回游戏列表</a>
+  </div>
+
+</body>
+</html>
