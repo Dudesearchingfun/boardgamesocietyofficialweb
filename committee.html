@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>执委团 - Committee</title>
+
+  <!-- 字体导入 -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Noto+Sans+SC:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0a0a2a;
+      font-family: 'Noto Sans SC', sans-serif;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    canvas#starfield {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 100px auto;
+      text-align: center;
+      padding: 40px;
+      background: rgba(0, 0, 30, 0.6);
+      border: 4px solid #5ce1e6;
+      border-radius: 28px;
+      box-shadow: 0 0 30px #5ce1e6aa;
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.5rem;
+      margin-bottom: 30px;
+      color: #5ce1e6;
+      text-shadow: 0 0 10px #5ce1e6;
+    }
+
+    .message {
+      font-size: 2rem;
+      color: #ffffffcc;
+      margin-bottom: 40px;
+    }
+
+    .btn-home {
+      display: inline-block;
+      padding: 14px 32px;
+      font-size: 1.2rem;
+      color: #000f1e;
+      background: linear-gradient(to right, #5ce1e6, #1fb6ff);
+      text-decoration: none;
+      border-radius: 30px;
+      box-shadow: 0 0 15px #5ce1e6aa;
+      transition: 0.3s ease;
+    }
+
+    .btn-home:hover {
+      background: linear-gradient(to right, #1fb6ff, #5ce1e6);
+      color: #ffffff;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 80px 20px;
+        padding: 30px;
+      }
+      h1 {
+        font-size: 2.5rem;
+      }
+      .message {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+
+<div class="container">
+  <h1>执委团</h1>
+  <div class="message">未载入😅</div>
+  <a href="index.html" class="btn-home">返回首页</a>
+</div>
+
+<script>
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+
+  const stars = [];
+  const numStars = 250;
+  const focalLength = 400;
+
+  class Star {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * width - width / 2;
+      this.y = Math.random() * height - height / 2;
+      this.z = Math.random() * width;
+    }
+    update() {
+      this.z -= 2;
+      if (this.z <= 0) this.reset();
+    }
+    draw() {
+      const sx = width / 2 + (this.x * focalLength) / this.z;
+      const sy = height / 2 + (this.y * focalLength) / this.z;
+      const r = (1 - this.z / width) * 2;
+      ctx.beginPath();
+      ctx.arc(sx, sy, r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(92,225,230,0.8)";
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < numStars; i++) stars.push(new Star());
+
+  function animate() {
+    ctx.fillStyle = "#0a0a2a";
+    ctx.fillRect(0, 0, width, height);
+    for (let star of stars) {
+      star.update();
+      star.draw();
+    }
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener("resize", () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+  });
+
+  animate();
+</script>
+
+</body>
+</html>
